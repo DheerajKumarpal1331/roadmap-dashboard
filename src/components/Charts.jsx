@@ -8,9 +8,9 @@ const CAT_COLORS = {
   'Mathematics & Statistics': '#f97316',
   'Machine Learning': '#ec4899',
   'Deep Learning': '#a855f7',
-  'AI & LLMs': '#00d4ff',
+  'AI & LLMs': '#0ea5e9',
   'Data Analysis': '#22c55e',
-  'Data Engineering': '#f0a500',
+  'Data Engineering': '#f59e0b',
   'MLOps & Infrastructure': '#ef4444',
 }
 
@@ -50,44 +50,40 @@ export function RadarChart() {
     const p = polar(angles[i], maxR + 22)
     const xFrac = (p.x - cx) / maxR
     const anchor = xFrac > 0.1 ? 'start' : xFrac < -0.1 ? 'end' : 'middle'
-    return { ...p, label: cat.name, anchor, pct: cat.pct, color: CAT_COLORS[cat.name] || 'var(--text-muted)' }
+    return { ...p, label: cat.name, anchor, pct: cat.pct, color: CAT_COLORS[cat.name] || '#52525b' }
   })
 
   return (
     <div className="chart-card">
       <div className="chart-title">Skill Strength by Category</div>
       <svg width={size} height={size} className="radar-svg" viewBox={`0 0 ${size} ${size}`} style={{ overflow: 'visible' }}>
-        <defs>
-          <radialGradient id="radar-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="rgba(240,165,0,0.15)" />
-            <stop offset="100%" stopColor="transparent" />
-          </radialGradient>
-        </defs>
         {/* rings */}
         {rings.map((d, i) => (
-          <path key={i} d={d} fill={i === levels - 1 ? 'none' : 'none'} stroke={i === levels - 1 ? 'var(--border-bright)' : 'var(--border)'} strokeWidth={i === levels - 1 ? 1.5 : 0.8} strokeDasharray={i === levels - 1 ? '3 6' : ''} opacity={0.7} />
+          <path key={i} d={d} fill="none"
+            stroke={i === levels - 1 ? '#d4d4d8' : '#e4e4e7'}
+            strokeWidth={i === levels - 1 ? 1.5 : 0.8}
+            strokeDasharray={i === levels - 1 ? '3 6' : ''}
+          />
         ))}
         {/* spokes */}
         {spokes.map((s, i) => (
-          <line key={i} {...s} stroke="var(--border)" strokeWidth={0.8} />
+          <line key={i} {...s} stroke="#e4e4e7" strokeWidth={0.8} />
         ))}
-        {/* data fill with glow */}
-        <path d={dataPath} fill="rgba(240,165,0,0.08)" stroke="none" />
-        <path d={dataPath} fill="none" stroke="var(--gold)" strokeWidth={2} strokeLinejoin="round"
-          style={{ filter: 'drop-shadow(0 0 6px rgba(240,165,0,0.5))' }} />
+        {/* data fill */}
+        <path d={dataPath} fill="rgba(37,99,235,0.06)" stroke="none" />
+        <path d={dataPath} fill="none" stroke="#2563eb" strokeWidth={2} strokeLinejoin="round" />
         {/* colored dots per category */}
         {dataPts.map((p, i) => (
-          <circle key={i} cx={p.x} cy={p.y} r={cats[i].pct > 0 ? 4 : 2}
-            fill={cats[i].pct > 0 ? (CAT_COLORS[cats[i].name] || 'var(--gold)') : 'var(--border-bright)'}
-            stroke="var(--bg-card)" strokeWidth={1.5}
-            style={{ filter: cats[i].pct > 0 ? `drop-shadow(0 0 5px ${CAT_COLORS[cats[i].name] || '#f0a500'})` : '' }}
+          <circle key={i} cx={p.x} cy={p.y} r={cats[i].pct > 0 ? 4 : 2.5}
+            fill={cats[i].pct > 0 ? (CAT_COLORS[cats[i].name] || '#2563eb') : '#e4e4e7'}
+            stroke="#fff" strokeWidth={1.5}
           />
         ))}
         {/* labels */}
         {labelPts.map((l, i) => (
           <text key={i} x={l.x} y={l.y}
             textAnchor={l.anchor} dominantBaseline="middle"
-            fill={l.pct > 0 ? l.color : 'var(--text-muted)'}
+            fill={l.pct > 0 ? l.color : '#a1a1aa'}
             fontSize="8" fontFamily="var(--font-mono)" fontWeight="600"
           >{l.label}</text>
         ))}
@@ -108,7 +104,7 @@ export function RoleBarChart() {
     <div className="chart-card">
       <div className="chart-title">Role Readiness Comparison</div>
       <div className="bar-chart-list">
-        {rows.map(({ id, role, pct, doneSkills, totalSkills }) => (
+        {rows.map(({ id, role, pct }) => (
           <div key={id} className="bar-row">
             <div className="bar-label">
               <span>{role.icon}</span>
@@ -117,18 +113,10 @@ export function RoleBarChart() {
             <div className="bar-track">
               <div
                 className="bar-fill"
-                style={{
-                  width: `${pct}%`,
-                  background: pct >= 70
-                    ? `linear-gradient(90deg, ${role.color}, var(--green))`
-                    : pct >= 30
-                    ? `linear-gradient(90deg, ${role.color}, var(--gold))`
-                    : role.color,
-                  boxShadow: pct > 0 ? `0 0 10px ${role.color}55` : 'none',
-                }}
+                style={{ width: `${pct}%`, background: role.color }}
               />
             </div>
-            <div className="bar-pct-label" style={{ color: pct > 0 ? role.color : 'var(--text-muted)' }}>
+            <div className="bar-pct-label" style={{ color: pct > 0 ? role.color : '#a1a1aa' }}>
               {pct}%
             </div>
           </div>

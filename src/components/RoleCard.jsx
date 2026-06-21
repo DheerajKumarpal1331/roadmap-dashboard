@@ -1,6 +1,5 @@
 import { useProgressContext } from '../App'
 import { ROLES } from '../data/skills'
-import ProgressRing from './ProgressRing'
 
 export default function RoleCard({ roleId, onSelect }) {
   const { getRoleProgress } = useProgressContext()
@@ -8,12 +7,11 @@ export default function RoleCard({ roleId, onSelect }) {
   const { doneSkills, totalSkills, doneSubtopics, totalSubtopics, pct } = getRoleProgress(roleId)
 
   const status = pct === 0 ? 'not-started' : pct === 100 ? 'complete' : 'in-progress'
-  const statusLabel = { 'not-started': 'Not started', 'in-progress': 'In progress', 'complete': 'Complete' }[status]
 
-  const statusStyle = {
-    'not-started': { color: 'rgba(255,255,255,0.35)', bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.08)' },
-    'in-progress':  { color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)' },
-    'complete':     { color: '#10b981', bg: 'rgba(16,185,129,0.1)', border: 'rgba(16,185,129,0.25)' },
+  const statusStyles = {
+    'not-started': { color: '#a8a6a1', bg: '#f7f6f4', border: '#e2e1de', label: 'Not started' },
+    'in-progress':  { color: '#92400e', bg: '#fff7ed', border: '#fed7aa', label: 'In progress' },
+    'complete':     { color: '#166534', bg: '#f0fdf4', border: '#bbf7d0', label: 'Complete' },
   }[status]
 
   return (
@@ -22,43 +20,30 @@ export default function RoleCard({ roleId, onSelect }) {
       onClick={() => onSelect(roleId)}
       style={{ '--role-color': role.color }}
     >
-      {/* Radial glow from top-center */}
-      <div
-        className="role-card-bg"
-        style={{ background: `radial-gradient(ellipse 80% 60% at 50% 0%, ${role.color}, transparent)` }}
-      />
-      {/* Subtle bottom edge glow on hover */}
-      <div
-        className="role-card-bottom-glow"
-        style={{ background: `linear-gradient(90deg, transparent, ${role.color}80, transparent)` }}
-      />
+      <div className="role-card-top">
+        <div className="role-card-icon">{role.icon}</div>
+        <div className="role-card-pct" style={{ color: pct > 0 ? role.color : '#a8a6a1' }}>{pct}%</div>
+      </div>
 
-      <div className="role-card-icon">{role.icon}</div>
       <div className="role-card-name">{role.name}</div>
 
-      <ProgressRing pct={pct} size={108} stroke={8} color={role.color} />
+      <div className="role-card-track">
+        <div className="role-card-fill" style={{ width: `${pct}%`, background: role.color }} />
+      </div>
 
       <div className="role-card-stats">
-        <div className="role-stat">
-          <span className="role-stat-value" style={{ color: role.color }}>{doneSkills}</span>
-          <span className="role-stat-label">of {totalSkills} skills</span>
-        </div>
-        <div className="role-stat-divider" />
-        <div className="role-stat">
-          <span className="role-stat-value" style={{ color: 'rgba(255,255,255,0.6)' }}>{doneSubtopics}</span>
-          <span className="role-stat-label">of {totalSubtopics} topics</span>
+        <span className="role-card-stat-text">{doneSkills}/{totalSkills} skills</span>
+        <div
+          className="role-card-status"
+          style={{
+            color: statusStyles.color,
+            background: statusStyles.bg,
+            border: `1px solid ${statusStyles.border}`,
+          }}
+        >
+          {statusStyles.label}
         </div>
       </div>
-
-      <div
-        className="role-card-status"
-        style={{ color: statusStyle.color, background: statusStyle.bg, borderColor: statusStyle.border }}
-      >
-        <span className="status-dot" style={{ background: statusStyle.color, boxShadow: status === 'in-progress' ? `0 0 8px ${statusStyle.color}` : 'none' }} />
-        {statusLabel}
-      </div>
-
-      <span className="role-card-open-hint">open to track →</span>
     </div>
   )
 }

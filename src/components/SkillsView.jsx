@@ -118,8 +118,8 @@ export default function SkillsView() {
             const isOpen = openCats.has(cat)
             const catDone = skillIds.filter(id => getSkillProgress(id).done).length
             const catPct = Math.round((catDone / skillIds.length) * 100)
-            const catPctColor = catPct >= 70 ? 'var(--green)' : catPct >= 30 ? 'var(--gold)' : 'var(--text-muted)'
-            const catColor = CAT_COLORS[cat] || 'var(--text-muted)'
+            const catPctColor = catPct >= 70 ? '#16a34a' : catPct >= 30 ? '#d97706' : '#a1a1aa'
+            const catColor = CAT_COLORS[cat] || '#a1a1aa'
             const catIcon = CAT_ICONS[cat] || '📁'
 
             return (

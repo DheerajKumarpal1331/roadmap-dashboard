@@ -3,16 +3,14 @@ import { CERTIFICATIONS, loadCerts, saveCerts } from '../data/certifications'
 import { ROLES } from '../data/skills'
 
 const PROVIDER_COLORS = {
-  GCP: '#4285f4', AWS: '#ff9900', Azure: '#0078d4', Databricks: '#ff3621',
-  Snowflake: '#29b5e8', DLAI: '#e40046', Google: '#4285f4', IBM: '#054ada',
-  PyInst: '#3776ab', Oracle: '#f80000', Tableau: '#e97627', Confluent: '#cc0000',
-  K8s: '#326ce5', HashiCorp: '#7b42bc', dbt: '#ff694a', Astronomer: '#017CEE',
-  NVIDIA: '#76b900', Meta: '#1877f2', DataCamp: '#03ef62'
+  GCP: '#4285f4', AWS: '#f59e0b', Azure: '#0078d4', Databricks: '#ef4444',
+  Snowflake: '#29b5e8', DLAI: '#e40046', Google: '#4285f4',
+  Tableau: '#e97627', Confluent: '#cc0000',
+  K8s: '#326ce5', HashiCorp: '#7b42bc', dbt: '#f97316', NVIDIA: '#76b900',
 }
 
 function useCerts() {
   const [certs, setCerts] = useState(loadCerts)
-
   function toggleCert(certId) {
     setCerts(prev => {
       const next = { ...prev, [certId]: !prev[certId] }
@@ -20,7 +18,6 @@ function useCerts() {
       return next
     })
   }
-
   return { certs, toggleCert }
 }
 
@@ -42,7 +39,6 @@ export default function CertificationsView() {
     })
   }, [filterRole, filterLevel, filterCost, filterStatus, certs])
 
-  // Group by provider
   const byProvider = useMemo(() => {
     const map = {}
     filtered.forEach(([id, cert]) => {
@@ -58,44 +54,43 @@ export default function CertificationsView() {
 
   const levels = [...new Set(Object.values(CERTIFICATIONS).map(c => c.level))].sort()
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+  const statsCards = [
+    { label: 'Total', value: totalAll, color: '#2563eb', icon: '🎓' },
+    { label: 'Completed', value: totalDone, color: '#16a34a', icon: '✅' },
+    { label: 'Remaining', value: totalAll - totalDone, color: '#d97706', icon: '⏳' },
+  ]
 
-      {/* Header stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
-        {[
-          { label: 'Total Certifications', value: totalAll, color: 'var(--cyan)', glow: 'rgba(6,182,212,0.35)', icon: '🎓' },
-          { label: 'Completed', value: totalDone, color: 'var(--green)', glow: 'rgba(16,185,129,0.35)', icon: '✅' },
-          { label: 'Remaining', value: totalAll - totalDone, color: 'var(--gold)', glow: 'rgba(245,158,11,0.4)', icon: '⏳' }
-        ].map(s => (
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+      {/* Stats row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+        {statsCards.map(s => (
           <div key={s.label} style={{
-            background: 'var(--glass)', backdropFilter: 'var(--blur)', WebkitBackdropFilter: 'var(--blur)',
-            border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)',
-            padding: '22px 22px 20px', position: 'relative', overflow: 'hidden',
-            boxShadow: 'var(--shadow-card)',
-            transition: 'all 220ms ease',
+            background: '#fff',
+            border: '1px solid #e4e4e7',
+            borderRadius: 14,
+            padding: '18px 20px 16px',
+            position: 'relative', overflow: 'hidden',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.07)',
           }}>
             <div style={{
-              position: 'absolute', top: 0, left: 0, right: 0, height: 2,
-              background: s.color, boxShadow: `0 0 16px ${s.glow}`,
-              borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0',
+              position: 'absolute', top: 0, left: 0, right: 0, height: 3,
+              background: s.color,
+              borderRadius: '14px 14px 0 0',
             }} />
-            <div style={{
-              position: 'absolute', top: -30, right: -30, width: 110, height: 110,
-              borderRadius: '50%', background: s.color, opacity: 0.07,
-              filter: 'blur(24px)', pointerEvents: 'none',
-            }} />
-            <div style={{ fontSize: 20, marginBottom: 10, position: 'relative' }}>{s.icon}</div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 34, fontWeight: 700, color: s.color, lineHeight: 1, marginBottom: 8, letterSpacing: '-1px', position: 'relative' }}>{s.value}</div>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1.2, fontWeight: 700, position: 'relative' }}>{s.label}</div>
+            <div style={{ fontSize: 20, marginBottom: 8 }}>{s.icon}</div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 30, fontWeight: 700, color: s.color, lineHeight: 1, marginBottom: 6, letterSpacing: '-1px' }}>{s.value}</div>
+            <div style={{ fontSize: 11, color: '#a1a1aa', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 600 }}>{s.label}</div>
           </div>
         ))}
       </div>
 
-      {/* Role progress mini-bars */}
-      <div style={{ background: 'var(--glass)', backdropFilter: 'var(--blur)', WebkitBackdropFilter: 'var(--blur)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '18px 22px', boxShadow: 'var(--shadow-card)' }}>
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 14 }}>
+      {/* Certs by role */}
+      <div style={{ background: '#fff', border: '1px solid #e4e4e7', borderRadius: 14, padding: '16px 20px', boxShadow: '0 1px 3px rgba(0,0,0,0.07)' }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: '#a1a1aa', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
           Certifications by Role
+          <span style={{ flex: 1, height: 1, background: '#e4e4e7', display: 'block' }} />
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
           {Object.entries(ROLES).map(([roleId, role]) => {
@@ -103,17 +98,17 @@ export default function CertificationsView() {
             const roleDone = roleCerts.filter(([id]) => certs[id]).length
             const pct = roleCerts.length > 0 ? Math.round((roleDone / roleCerts.length) * 100) : 0
             return (
-              <div key={roleId} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div key={roleId} style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', display: 'flex', gap: 5 }}>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: '#52525b', display: 'flex', gap: 5, alignItems: 'center' }}>
                     {role.icon} {role.name}
                   </span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: pct > 0 ? role.color : 'var(--text-muted)' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: pct > 0 ? role.color : '#a1a1aa' }}>
                     {roleDone}/{roleCerts.length}
                   </span>
                 </div>
-                <div style={{ height: 5, background: 'rgba(255,255,255,0.04)', borderRadius: 99, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${role.color}cc, ${role.color})`, borderRadius: 99, transition: 'width 600ms ease', boxShadow: pct > 0 ? `0 0 8px ${role.color}50` : 'none' }} />
+                <div style={{ height: 5, background: '#f4f4f5', borderRadius: 99, overflow: 'hidden', border: '1px solid #e4e4e7' }}>
+                  <div style={{ height: '100%', width: `${pct}%`, background: role.color, borderRadius: 99, transition: 'width 600ms ease' }} />
                 </div>
               </div>
             )
@@ -148,23 +143,23 @@ export default function CertificationsView() {
         <div className="skills-stats">{filteredDone} / {filtered.length} done</div>
       </div>
 
-      {/* Cert table grouped by provider */}
+      {/* Cert list */}
       {filtered.length === 0 ? (
         <div className="empty-state"><div className="empty-state-icon">🎓</div>No certifications match filters.</div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {byProvider.map(([badge, certPairs]) => {
-            const providerColor = PROVIDER_COLORS[badge] || 'var(--text-secondary)'
+            const providerColor = PROVIDER_COLORS[badge] || '#52525b'
             const doneCnt = certPairs.filter(([id]) => certs[id]).length
             return (
-              <div key={badge} style={{ background: 'var(--glass)', backdropFilter: 'var(--blur)', WebkitBackdropFilter: 'var(--blur)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', boxShadow: 'var(--shadow-card)' }}>
+              <div key={badge} style={{ background: '#fff', border: '1px solid #e4e4e7', borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
                 {/* Provider header */}
-                <div style={{ padding: '13px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(0,0,0,0.2)' }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: providerColor, background: `${providerColor}18`, border: `1px solid ${providerColor}40`, padding: '2px 8px', borderRadius: 99 }}>{badge}</span>
-                  <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>
+                <div style={{ padding: '11px 18px', borderBottom: '1px solid #f4f4f5', display: 'flex', alignItems: 'center', gap: 10, background: '#fafafa' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: providerColor, background: `${providerColor}14`, border: `1px solid ${providerColor}30`, padding: '2px 8px', borderRadius: 99 }}>{badge}</span>
+                  <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: '#09090b' }}>
                     {certPairs[0][1].provider.split(' /')[0]}
                   </span>
-                  <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 11, color: doneCnt > 0 ? 'var(--green)' : 'var(--text-muted)' }}>
+                  <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 600, color: doneCnt > 0 ? '#16a34a' : '#a1a1aa' }}>
                     {doneCnt}/{certPairs.length}
                   </span>
                 </div>
@@ -172,7 +167,7 @@ export default function CertificationsView() {
                 <div>
                   {certPairs.map(([certId, cert]) => {
                     const done = !!certs[certId]
-                    const diffColor = cert.difficulty === 1 ? 'var(--green)' : cert.difficulty === 2 ? 'var(--gold)' : '#ef4444'
+                    const diffColor = cert.difficulty === 1 ? '#16a34a' : cert.difficulty === 2 ? '#d97706' : '#dc2626'
                     const diffLabel = ['', 'Beginner', 'Intermediate', 'Advanced'][cert.difficulty]
                     return (
                       <div
@@ -181,64 +176,58 @@ export default function CertificationsView() {
                         style={{
                           display: 'flex', alignItems: 'center', gap: 12,
                           padding: '11px 18px',
-                          borderBottom: '1px solid var(--border)',
+                          borderBottom: '1px solid #f4f4f5',
                           cursor: 'pointer',
-                          background: done ? 'rgba(34,197,94,0.03)' : 'transparent',
-                          transition: 'background 150ms'
+                          background: done ? '#f0fdf4' : '#fff',
+                          transition: 'background 150ms',
                         }}
                       >
-                        {/* checkbox */}
                         <div style={{
-                          width: 18, height: 18, borderRadius: 5, border: `2px solid ${done ? 'var(--green)' : 'var(--border-bright)'}`,
-                          background: done ? 'var(--green-dim)' : 'transparent',
+                          width: 17, height: 17, borderRadius: 5,
+                          border: `1.5px solid ${done ? '#16a34a' : '#d4d4d8'}`,
+                          background: done ? '#dcfce7' : '#fff',
                           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                          transition: 'all 150ms'
+                          transition: 'all 150ms',
                         }}>
-                          {done && <span style={{ fontSize: 11, color: 'var(--green)', fontWeight: 700 }}>✓</span>}
+                          {done && <span style={{ fontSize: 10, color: '#16a34a', fontWeight: 700 }}>✓</span>}
                         </div>
 
-                        {/* name */}
                         <span style={{
                           flex: 1, fontSize: 13, fontWeight: 500,
-                          color: done ? 'var(--text-muted)' : 'var(--text-primary)',
+                          color: done ? '#a1a1aa' : '#09090b',
                           textDecoration: done ? 'line-through' : 'none',
-                          textDecorationColor: 'var(--border-bright)'
                         }}>
                           {cert.name}
                         </span>
 
-                        {/* level */}
-                        <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 99, background: 'var(--border)', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                        <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 99, background: '#f4f4f5', color: '#71717a', whiteSpace: 'nowrap' }}>
                           {cert.level}
                         </span>
 
-                        {/* difficulty */}
-                        <span style={{ fontSize: 10, fontWeight: 600, color: diffColor, whiteSpace: 'nowrap', minWidth: 72 }}>
+                        <span style={{ fontSize: 10, fontWeight: 600, color: diffColor, whiteSpace: 'nowrap', minWidth: 80 }}>
                           {'●'.repeat(cert.difficulty)}{'○'.repeat(3 - cert.difficulty)} {diffLabel}
                         </span>
 
-                        {/* cost */}
                         <span style={{
                           fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, whiteSpace: 'nowrap',
-                          background: cert.cost === 'free' ? 'var(--green-dim)' : 'var(--gold-dim)',
-                          color: cert.cost === 'free' ? 'var(--green)' : 'var(--gold)',
-                          border: `1px solid ${cert.cost === 'free' ? 'rgba(34,197,94,0.3)' : 'rgba(240,165,0,0.3)'}`
+                          background: cert.cost === 'free' ? '#f0fdf4' : '#fffbeb',
+                          color: cert.cost === 'free' ? '#16a34a' : '#d97706',
+                          border: `1px solid ${cert.cost === 'free' ? '#bbf7d0' : '#fde68a'}`,
                         }}>
                           {cert.cost === 'free' ? 'FREE' : 'PAID'}
                         </span>
 
-                        {/* role badges */}
-                        <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap', justifyContent: 'flex-end', maxWidth: 140 }}>
+                        <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap', justifyContent: 'flex-end', maxWidth: 120 }}>
                           {cert.roles.slice(0, 3).map(r => (
                             <span key={r} className="role-badge" style={{
-                              background: `${ROLES[r]?.color}18`, color: ROLES[r]?.color,
-                              border: `1px solid ${ROLES[r]?.color}35`
+                              background: `${ROLES[r]?.color}14`, color: ROLES[r]?.color,
+                              border: `1px solid ${ROLES[r]?.color}30`,
                             }}>
                               {ROLES[r]?.icon}
                             </span>
                           ))}
                           {cert.roles.length > 3 && (
-                            <span className="role-badge" style={{ background: 'var(--border)', color: 'var(--text-muted)' }}>+{cert.roles.length - 3}</span>
+                            <span className="role-badge" style={{ background: '#f4f4f5', color: '#a1a1aa' }}>+{cert.roles.length - 3}</span>
                           )}
                         </div>
                       </div>

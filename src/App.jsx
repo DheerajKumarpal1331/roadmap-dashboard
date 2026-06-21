@@ -16,12 +16,6 @@ export default function App() {
 
   return (
     <ProgressContext.Provider value={progressApi}>
-      <div className="bg-mesh" aria-hidden="true">
-        <div className="blob blob-1" />
-        <div className="blob blob-2" />
-        <div className="blob blob-3" />
-        <div className="blob blob-4" />
-      </div>
       <div className="app">
         <Navbar view={view} setView={setView} />
         <main className="main">
@@ -34,5 +28,6 @@ export default function App() {
         )}
       </div>
     </ProgressContext.Provider>
+
   )
 }

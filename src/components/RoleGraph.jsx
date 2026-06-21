@@ -14,7 +14,6 @@ export default function RoleGraph() {
   const roleIds = Object.keys(ROLES)
   const n = roleIds.length
 
-  // viewBox with generous padding so labels never clip
   const VB_W = 680
   const VB_H = 560
   const cx = VB_W / 2
@@ -58,22 +57,19 @@ export default function RoleGraph() {
           style={{ display: 'block', width: '100%', maxWidth: 620, flexShrink: 0 }}
         >
           <defs>
-            <radialGradient id="orbit-glow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="rgba(240,165,0,0.06)" />
-              <stop offset="100%" stopColor="transparent" />
-            </radialGradient>
-            <filter id="node-glow">
-              <feGaussianBlur stdDeviation="4" result="b" />
-              <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
-            </filter>
+            {edges.map((e) => (
+              <linearGradient key={`eg-${e.a}-${e.b}`} id={`eg-${e.a}-${e.b}`}
+                x1={nodes[e.a].x} y1={nodes[e.a].y} x2={nodes[e.b].x} y2={nodes[e.b].y} gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor={nodes[e.a].role.color} />
+                <stop offset="100%" stopColor={nodes[e.b].role.color} />
+              </linearGradient>
+            ))}
           </defs>
 
-          {/* background glow */}
-          <circle cx={cx} cy={cy} r={ORBIT_R + 40} fill="url(#orbit-glow)" />
           {/* orbit ring */}
-          <circle cx={cx} cy={cy} r={ORBIT_R} fill="none" stroke="var(--border)" strokeWidth={1} strokeDasharray="3 7" opacity={0.6} />
+          <circle cx={cx} cy={cy} r={ORBIT_R} fill="none" stroke="#e4e4e7" strokeWidth={1} strokeDasharray="3 7" />
           {/* center dot */}
-          <circle cx={cx} cy={cy} r={4} fill="var(--gold)" opacity={0.4} />
+          <circle cx={cx} cy={cy} r={4} fill="#d97706" opacity={0.5} />
 
           {/* edges */}
           {edges.map((e, i) => {
@@ -81,24 +77,17 @@ export default function RoleGraph() {
             const hi = isConnected(e, hovered)
             const dim = hovered !== null && !hi
             const strokeW = Math.max(0.8, (e.count / maxShared) * 4.5)
-            const gradId = `eg-${e.a}-${e.b}`
             const mx = (na.x + nb.x) / 2, my = (na.y + nb.y) / 2
             const px = cx + (mx - cx) * 0.25, py = cy + (my - cy) * 0.25
 
             return (
               <g key={i}>
-                <defs>
-                  <linearGradient id={gradId} x1={na.x} y1={na.y} x2={nb.x} y2={nb.y} gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor={na.role.color} />
-                    <stop offset="100%" stopColor={nb.role.color} />
-                  </linearGradient>
-                </defs>
                 <path
                   d={`M${na.x},${na.y} Q${px},${py} ${nb.x},${nb.y}`}
                   fill="none"
-                  stroke={hi ? `url(#${gradId})` : '#2d3748'}
+                  stroke={hi ? `url(#eg-${e.a}-${e.b})` : '#d4d4d8'}
                   strokeWidth={hi ? strokeW + 1.5 : 0.8}
-                  opacity={dim ? 0.03 : hi ? 1 : 0.4}
+                  opacity={dim ? 0.05 : hi ? 1 : 0.5}
                   style={{ transition: 'opacity 180ms, stroke-width 180ms' }}
                 />
                 {hi && (
@@ -107,7 +96,7 @@ export default function RoleGraph() {
                     y={(na.y + nb.y) / 2 * 0.55 + py * 0.45}
                     textAnchor="middle" dominantBaseline="middle"
                     fontSize="9" fontFamily="var(--font-mono)" fontWeight="700"
-                    fill="var(--gold)" opacity={0.95}
+                    fill="#d97706"
                   >
                     {e.count}
                   </text>
@@ -126,40 +115,36 @@ export default function RoleGraph() {
             const dash = (node.pct / 100) * circ
 
             return (
-              <g key={node.id} opacity={isDim ? 0.25 : 1}
+              <g key={node.id} opacity={isDim ? 0.2 : 1}
                 style={{ cursor: 'pointer', transition: 'opacity 180ms' }}
                 onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)}
               >
-                {/* outer glow ring */}
-                <circle cx={node.x} cy={node.y} r={r + 10} fill={`${node.role.color}08`} />
                 {/* progress arc */}
                 {node.pct > 0 && (
                   <circle cx={node.x} cy={node.y} r={arcR} fill="none"
                     stroke={node.role.color} strokeWidth={3} strokeLinecap="round"
                     strokeDasharray={`${dash} ${circ}`}
                     transform={`rotate(-90 ${node.x} ${node.y})`}
-                    opacity={0.85}
-                    style={{ filter: `drop-shadow(0 0 4px ${node.role.color})` }}
+                    opacity={0.8}
                   />
                 )}
                 {/* node bg */}
-                <circle cx={node.x} cy={node.y} r={r} fill="var(--bg-panel)"
-                  stroke={isH ? node.role.color : `${node.role.color}60`}
-                  strokeWidth={isH ? 2.5 : 1.5}
-                  style={{ transition: 'r 150ms' }}
+                <circle cx={node.x} cy={node.y} r={r} fill="#fff"
+                  stroke={isH ? node.role.color : '#e4e4e7'}
+                  strokeWidth={isH ? 2 : 1.5}
                 />
                 {/* icon */}
                 <text x={node.x} y={node.y - 8} textAnchor="middle" fontSize={isH ? 18 : 15}>{node.role.icon}</text>
                 {/* pct */}
                 <text x={node.x} y={node.y + 10} textAnchor="middle"
                   fontSize="9" fontFamily="var(--font-mono)" fontWeight="700"
-                  fill={node.pct > 0 ? node.role.color : 'var(--text-muted)'}
+                  fill={node.pct > 0 ? node.role.color : '#a1a1aa'}
                 >{node.pct}%</text>
               </g>
             )
           })}
 
-          {/* labels — positioned outside orbit with extra clearance */}
+          {/* labels */}
           {nodes.map((node, i) => {
             const labelR = ORBIT_R + NODE_R + 26
             const lx = cx + labelR * Math.cos(node.angle)
@@ -172,8 +157,8 @@ export default function RoleGraph() {
               <text key={node.id} x={lx} y={ly}
                 textAnchor={anchor} dominantBaseline="middle"
                 fontSize={isH ? 12 : 11}
-                fontFamily="var(--font-body)" fontWeight={isH ? 700 : 500}
-                fill={isH ? node.role.color : 'var(--text-secondary)'}
+                fontFamily="var(--font-sans)" fontWeight={isH ? 700 : 500}
+                fill={isH ? node.role.color : '#52525b'}
                 style={{ cursor: 'pointer', transition: 'all 150ms' }}
                 onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)}
               >
@@ -187,58 +172,58 @@ export default function RoleGraph() {
         <div style={{ flex: 1, minWidth: 200 }}>
           {hovered === null ? (
             <div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 14 }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: '#a1a1aa', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 12 }}>
                 All Roles
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                 {nodes.map(node => (
-                  <div key={node.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-primary)', cursor: 'pointer', transition: 'border-color 150ms' }}
+                  <div key={node.id} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '6px 10px', borderRadius: 8, border: '1px solid #e4e4e7', background: '#fff', cursor: 'pointer', transition: 'border-color 150ms' }}
                     onMouseEnter={() => setHovered(nodes.findIndex(n => n.id === node.id))}
                     onMouseLeave={() => setHovered(null)}
                   >
                     <span style={{ fontSize: 14 }}>{node.role.icon}</span>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', flex: 1 }}>{node.role.name}</span>
-                    <div style={{ width: 48, height: 4, background: 'var(--border)', borderRadius: 99, overflow: 'hidden' }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: '#52525b', flex: 1 }}>{node.role.name}</span>
+                    <div style={{ width: 44, height: 4, background: '#f4f4f5', borderRadius: 99, overflow: 'hidden', border: '1px solid #e4e4e7' }}>
                       <div style={{ height: '100%', width: `${node.pct}%`, background: node.role.color, borderRadius: 99 }} />
                     </div>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: node.pct > 0 ? node.role.color : 'var(--text-muted)', minWidth: 28, textAlign: 'right' }}>{node.pct}%</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: node.pct > 0 ? node.role.color : '#a1a1aa', minWidth: 28, textAlign: 'right' }}>{node.pct}%</span>
                   </div>
                 ))}
               </div>
-              <div style={{ marginTop: 14, padding: '10px 12px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.7 }}>
-                  Arc around each node = skill completion. Line thickness = shared skills. Hover to explore connections.
+              <div style={{ marginTop: 12, padding: '9px 11px', background: '#fafafa', borderRadius: 8, border: '1px solid #e4e4e7' }}>
+                <div style={{ fontSize: 11, color: '#a1a1aa', lineHeight: 1.7 }}>
+                  Arc = skill completion. Line thickness = shared skills. Hover to explore connections.
                 </div>
               </div>
             </div>
           ) : (
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, padding: '10px 14px', borderRadius: 'var(--radius-md)', background: `${nodes[hovered].role.color}12`, border: `1px solid ${nodes[hovered].role.color}35` }}>
-                <span style={{ fontSize: 24 }}>{nodes[hovered].role.icon}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, padding: '10px 13px', borderRadius: 10, background: `${nodes[hovered].role.color}0d`, border: `1px solid ${nodes[hovered].role.color}30` }}>
+                <span style={{ fontSize: 22 }}>{nodes[hovered].role.icon}</span>
                 <div>
                   <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14, color: nodes[hovered].role.color }}>{nodes[hovered].role.name}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{nodes[hovered].pct}% complete</div>
+                  <div style={{ fontSize: 11, color: '#a1a1aa', fontFamily: 'var(--font-mono)' }}>{nodes[hovered].pct}% complete</div>
                 </div>
               </div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10 }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: '#a1a1aa', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>
                 Shares skills with
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {edges.filter(e => e.a === hovered || e.b === hovered)
                   .sort((a, b) => b.count - a.count)
                   .map(e => {
                     const oi = e.a === hovered ? e.b : e.a
                     const other = nodes[oi]
                     return (
-                      <div key={oi} style={{ padding: '9px 12px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-sm)', border: `1px solid ${other.role.color}30` }}>
+                      <div key={oi} style={{ padding: '9px 12px', background: '#fff', borderRadius: 8, border: `1px solid ${other.role.color}25` }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 5 }}>
                           <span style={{ fontSize: 13 }}>{other.role.icon}</span>
                           <span style={{ fontSize: 12, fontWeight: 600, color: other.role.color }}>{other.role.name}</span>
-                          <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: 'var(--gold)', background: 'var(--gold-dim)', padding: '1px 7px', borderRadius: 99 }}>{e.count}</span>
+                          <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: '#d97706', background: '#fffbeb', padding: '1px 7px', borderRadius: 99, border: '1px solid #fde68a' }}>{e.count}</span>
                         </div>
-                        <div style={{ fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                        <div style={{ fontSize: 10, color: '#a1a1aa', lineHeight: 1.6 }}>
                           {e.skills.slice(0, 5).map(s => SKILLS[s]?.name).filter(Boolean).join(' · ')}
-                          {e.skills.length > 5 && <span style={{ color: 'var(--text-muted)' }}> +{e.skills.length - 5} more</span>}
+                          {e.skills.length > 5 && <span> +{e.skills.length - 5} more</span>}
                         </div>
                       </div>
                     )

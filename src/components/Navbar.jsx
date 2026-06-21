@@ -18,7 +18,7 @@ export default function Navbar({ view, setView }) {
     <>
       <nav className="navbar">
         <div className="navbar-brand">
-          <span className="navbar-brand-dot" />
+          <div className="brand-mark">R</div>
           Career Roadmap
         </div>
 

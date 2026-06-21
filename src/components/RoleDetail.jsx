@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useProgressContext } from '../App'
 import { ROLES, SKILLS } from '../data/skills'
-import ProgressRing from './ProgressRing'
 
 function SkillCheckbox({ done, partial }) {
   return (
@@ -16,15 +15,14 @@ function RoleBadge({ roleId }) {
   const role = ROLES[roleId]
   if (!role) return null
   return (
-    <span className="role-badge" style={{ background: `${role.color}20`, color: role.color, border: `1px solid ${role.color}40` }}>
+    <span className="role-badge" style={{ background: `${role.color}18`, color: role.color, border: `1px solid ${role.color}35` }}>
       {role.icon} {role.name}
     </span>
   )
 }
 
-// Subtopics list — uses context hook at component top level
 function SubtopicList({ skillId }) {
-  const { progress, toggleSubtopic, getSkillProgress } = useProgressContext()
+  const { progress, toggleSubtopic } = useProgressContext()
   const skill = SKILLS[skillId]
   const p = progress[skillId]
 
@@ -64,7 +62,7 @@ function PanelSkillRow({ skillId, currentRoleId }) {
         <div className="skill-row-badges">
           {sharedRoles.slice(0, 2).map(r => <RoleBadge key={r} roleId={r} />)}
           {sharedRoles.length > 2 && (
-            <span className="role-badge" style={{ background: 'var(--border)', color: 'var(--text-muted)' }}>
+            <span className="role-badge" style={{ background: 'var(--bg)', color: 'var(--text-3)', border: '1px solid var(--border)' }}>
               +{sharedRoles.length - 2}
             </span>
           )}
@@ -99,16 +97,22 @@ export default function RoleDetail({ roleId, onClose }) {
             </div>
             <button className="panel-close" onClick={onClose}>×</button>
           </div>
+
           <div className="panel-progress-summary">
-            <ProgressRing pct={pct} size={72} stroke={6} color={role.color} />
-            <div style={{ display: 'flex', gap: 20 }}>
+            <div className="panel-progress-bar-wrap">
+              <div className="panel-progress-bar-track">
+                <div className="panel-progress-bar-fill" style={{ width: `${pct}%`, background: role.color }} />
+              </div>
+              <div className="panel-progress-label">{pct}% complete</div>
+            </div>
+            <div className="panel-stats-row">
               <div className="panel-stat">
                 <span className="panel-stat-value" style={{ color: role.color }}>{doneSkills}</span>
                 <span className="panel-stat-label">/ {totalSkills} skills</span>
               </div>
               <div className="panel-stat">
                 <span className="panel-stat-value">{doneSubtopics}</span>
-                <span className="panel-stat-label">/ {totalSubtopics} subtopics</span>
+                <span className="panel-stat-label">/ {totalSubtopics} topics</span>
               </div>
             </div>
           </div>
