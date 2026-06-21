@@ -5,6 +5,6 @@ import react from '@vitejs/plugin-react'
 // Leave as '/' for a user/org site (username.github.io)
 export default defineConfig({
   plugins: [react()],
-  base: '/',
+  base: '/roadmap-dashboard/',
   server: { port: 5174 },
 })
